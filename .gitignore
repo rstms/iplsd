@@ -1,0 +1,6 @@
+lipsd
+notes
+cruft
+*.core
+*.log
+*postactivate
