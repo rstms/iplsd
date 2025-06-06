@@ -32,6 +32,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -40,72 +41,94 @@ import (
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Version: "0.0.1",
-	Use:     "lipsd",
-	Short:   "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:     "iplsd",
+	Short:   "IP log scan daemon",
+	Long: `
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+iplsd pf-table log scanning daemon
+
+Scan log files for regex patterns containing IP addresses.
+
+Open LOG_FILE; For each line added:
+  Match the line with REGEX
+
+When a pattern match produces a new IP_ADDRESS:
+  Append IP_ADDRESS to LIST_FILE if not already present
+  Write the timeout time into TIMEOUT_DIR/IP_ADDRESS
+
+Every TIMEOUT_INTERVAL: 
+  Read IP_ADDRESS (filename) and timeout (content) from TIMEOUT_DIR/*
+  If the timeout has expired:
+    Remove IP_ADDRESS from WATCHLIST_FILE
+    Delete TIMEOUT_DIR/IP_ADDRESS
+
+Use case: maintain IP address list table file for a pf rule
+
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		DaemonizeDisabled = viper.GetBool("debug")
+		Daemonize(func() {
+			scanner, err := NewScanner(
+				viper.GetString("address_file"),
+				viper.GetString("timeout_dir"),
+				viper.GetStringSlice("regex"),
+			)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if viper.GetBool("verbose") {
+				log.Println(FormatJSON(scanner))
+			}
+			err = scanner.Scan(viper.GetString("monitored_file"))
+			if err != nil {
+				log.Fatal(err)
+			}
+		}, viper.GetString("logfile"))
+
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
 }
-
 func init() {
 	cobra.OnInitialize(initConfig)
-	OptionString("logfile", "l", "stderr", "log filename")
-	OptionSwitch("debug", "", "produce debug output")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "/etc/iplsd/config.yaml", "config file")
+	OptionString("logfile", "l", "/var/log/iplsd", "log filename")
+	OptionSwitch("debug", "", "run in foreground")
 	OptionSwitch("verbose", "v", "increase verbosity")
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", os.Getenv("LIPSD_CONFIG_FILE"), "config file (default is $HOME/.lipsd.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
+	OptionString("interval-seconds", "", "600", "timeout check interval in seconds (default: 10 minutes)")
+	OptionString("timeout-seconds", "", "86400", "IP presence timeout in seconds (default: 24 hours)")
+	OptionString("monitored-file", "m", "", "log file to monitor")
+	OptionString("address-file", "w", "/etc/iplsd/watchlist", "IP whitelist/blacklist table file")
+	OptionString("timeout-dir", "d", "/etc/iplsd/timeout", "IP timeout file directory")
+	OptionString("regex", "r", `((?:\d{1,3}\.){3}\d{1,3})`, "regex patterns")
 }
-
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
-		// Use config file from the flag.
+		if !IsFile(cfgFile) {
+			cobra.CheckErr(fmt.Errorf("config file '%s' not found\n", cfgFile))
+		}
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".lipsd" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".lipsd")
+		viper.SetConfigName(".iplsd")
 	}
-
 	viper.SetEnvPrefix(rootCmd.Name())
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		if viper.GetBool("verbose") {
-			fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-		}
-	}
+	viper.AutomaticEnv()
+	err := viper.ReadInConfig()
+	cobra.CheckErr(err)
 	OpenLog()
-
+	if viper.GetBool("verbose") {
+		log.Println("Using config file:", viper.ConfigFileUsed())
+	}
 }

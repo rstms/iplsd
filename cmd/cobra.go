@@ -60,10 +60,11 @@ func OpenLog() {
 	if viper.GetBool("debug") {
 		log.SetFlags(log.Flags() | log.Lshortfile)
 	}
-	cobra.OnFinalize(CloseLog)
+	log.Printf("%s v%s startup\n", rootCmd.Name(), rootCmd.Version)
 }
 
 func CloseLog() {
+	log.Println("shutdown")
 	if LogFile != nil {
 		err := LogFile.Close()
 		cobra.CheckErr(err)

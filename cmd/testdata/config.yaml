@@ -1,1 +1,6 @@
 verbose: true
+address_file: testdata/whitelist
+timeout_dir: testdata/addresses
+monitored_file: testdata/logfile
+interval_seconds: 1
+timeout_seconds: 5

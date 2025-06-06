@@ -7,6 +7,8 @@ version != cat VERSION
 
 gitclean = if git status --porcelain | grep '^.*$$'; then echo git status is dirty; false; else echo git status is clean; true; fi
 
+cleanup != rm -f *.core
+
 install_dir = /usr/local/bin
 postinstall =
 

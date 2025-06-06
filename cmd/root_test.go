@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -14,4 +15,6 @@ func initTestConfig(t *testing.T) {
 
 func TestRoot(t *testing.T) {
 	initTestConfig(t)
+	settings := viper.AllSettings()
+	fmt.Println(FormatJSON(&settings))
 }

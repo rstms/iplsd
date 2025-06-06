@@ -7,7 +7,7 @@ import (
 )
 
 func initTestConfig(t *testing.T) {
-	viper.SetConfigFile("testdata/config.yaml")
+	viper.SetConfigFile("cmd/testdata/config.yaml")
 	err := viper.ReadInConfig()
 	require.Nil(t, err)
 }

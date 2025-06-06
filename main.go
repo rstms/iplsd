@@ -30,7 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package main
 
-import "github.com/rstms/lipsd/cmd"
+import "github.com/rstms/iplsd/cmd"
 
 func main() {
 	defer cmd.CloseLog()
