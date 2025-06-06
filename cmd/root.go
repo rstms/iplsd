@@ -31,15 +31,12 @@ POSSIBILITY OF SUCH DAMAGE.
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Version: "0.1.0",
@@ -97,38 +94,17 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
 func init() {
-	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "/etc/iplsd/config.yaml", "config file")
-	OptionString("logfile", "l", "/var/log/iplsd", "log filename")
-	OptionSwitch("debug", "", "run in foreground")
+	cobra.OnInitialize(InitConfig)
+	OptionString("config", "c", "", "config file")
+	OptionString("logfile", "l", "", "log filename (default: stderr)")
+	OptionSwitch("foreground", "", "run in foreground")
 	OptionSwitch("verbose", "v", "increase verbosity")
 	OptionString("interval-seconds", "", "600", "timeout check interval in seconds (default: 10 minutes)")
 	OptionString("timeout-seconds", "", "86400", "IP presence timeout in seconds (default: 24 hours)")
 	OptionString("monitored-file", "m", "", "log file to monitor")
 	OptionString("address-file", "w", "/etc/iplsd/watchlist", "IP whitelist/blacklist table file")
-	OptionString("timeout-dir", "d", "/etc/iplsd/timeout", "IP timeout file directory")
+	OptionString("timeout-dir", "d", "/etc/iplsd/ip", "IP timeout file directory")
 	OptionString("regex", "r", `((?:\d{1,3}\.){3}\d{1,3})`, "regex patterns")
-}
-func initConfig() {
-	if cfgFile != "" {
-		if !IsFile(cfgFile) {
-			cobra.CheckErr(fmt.Errorf("config file '%s' not found\n", cfgFile))
-		}
-		viper.SetConfigFile(cfgFile)
-	} else {
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".iplsd")
-	}
-	viper.SetEnvPrefix(rootCmd.Name())
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	cobra.CheckErr(err)
-	OpenLog()
-	if viper.GetBool("verbose") {
-		log.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }

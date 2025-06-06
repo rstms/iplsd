@@ -177,12 +177,11 @@ func (s *Scanner) reaper() error {
 					if err != nil {
 						return fmt.Errorf("reaper: failed umarshalling expiration from '%s': %v", filename, err)
 					}
-					expired := false
 					if time.Now().Compare(expiration) >= 0 {
 						expiredAddrs = append(expiredAddrs, addr)
-						expired = true
+					} else {
+						log.Printf("reaper: active %s %s\n", addr, string(timeData))
 					}
-					log.Printf("reaper: %s %s expired=%v\n", addr, string(timeData), expired)
 				}
 			}
 
@@ -195,7 +194,7 @@ func (s *Scanner) reaper() error {
 				if err != nil {
 					return err
 				}
-				log.Printf("reaper: IP %s %s %s\n", addr, action, s.AddressFile)
+				log.Printf("reaper: expired IP %s %s %s\n", addr, action, s.AddressFile)
 			}
 		}
 

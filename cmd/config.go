@@ -28,10 +28,43 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-package main
+package cmd
 
-import "github.com/rstms/iplsd/cmd"
+import (
+	"fmt"
+	"os"
 
-func main() {
-	cmd.Execute()
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
+
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "output configuration",
+	Long: `
+write current configuration data to stdout in YAML format
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		file, err := os.CreateTemp("", "*.yaml")
+		cobra.CheckErr(err)
+		func() {
+			defer file.Close()
+			err = viper.WriteConfigTo(file)
+			cobra.CheckErr(err)
+		}()
+		defer func() {
+			cobra.CheckErr(os.Remove(file.Name()))
+		}()
+		data, err := os.ReadFile(file.Name())
+		cobra.CheckErr(err)
+		filename := viper.ConfigFileUsed()
+		if filename != "" {
+			fmt.Printf("# %s\n", filename)
+		}
+		fmt.Println(string(data))
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(configCmd)
 }

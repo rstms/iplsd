@@ -45,7 +45,7 @@ func OpenLog() {
 	LogFile = nil
 	if filename == "stdout" || filename == "-" {
 		log.SetOutput(os.Stdout)
-	} else if filename == "stderr" {
+	} else if filename == "stderr" || filename == "" {
 		log.SetOutput(os.Stderr)
 	} else {
 		fp, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660)
@@ -60,12 +60,15 @@ func OpenLog() {
 	if viper.GetBool("debug") {
 		log.SetFlags(log.Flags() | log.Lshortfile)
 	}
-	log.Printf("%s v%s startup\n", rootCmd.Name(), rootCmd.Version)
+	if LogFile != nil {
+		log.Printf("%s v%s startup\n", rootCmd.Name(), rootCmd.Version)
+		cobra.OnFinalize(CloseLog)
+	}
 }
 
 func CloseLog() {
-	log.Println("shutdown")
 	if LogFile != nil {
+		log.Println("shutdown")
 		err := LogFile.Close()
 		cobra.CheckErr(err)
 		LogFile = nil
@@ -102,4 +105,34 @@ func ExpandPath(pathname string) string {
 		pathname = filepath.Join(home, pathname[1:])
 	}
 	return pathname
+}
+
+func InitConfig() {
+	viper.SetEnvPrefix(strings.ToLower(rootCmd.Name()))
+	viper.AutomaticEnv()
+	filename := viper.GetString("config")
+	if filename != "" {
+		viper.SetConfigFile(filename)
+	} else {
+		home, err := os.UserHomeDir()
+		cobra.CheckErr(err)
+		userConfig, err := os.UserConfigDir()
+		cobra.CheckErr(err)
+		viper.AddConfigPath(filepath.Join(home, "."+rootCmd.Name()))
+		viper.AddConfigPath(filepath.Join(userConfig, rootCmd.Name()))
+		viper.AddConfigPath(filepath.Join("/etc", rootCmd.Name()))
+		viper.SetConfigType("yaml")
+		viper.SetConfigName("config")
+	}
+	err := viper.ReadInConfig()
+	if err != nil {
+		_, ok := err.(viper.ConfigFileNotFoundError)
+		if !ok {
+			cobra.CheckErr(err)
+		}
+	}
+	OpenLog()
+	if viper.ConfigFileUsed() != "" && viper.GetBool("verbose") {
+		log.Println("Using config file:", viper.ConfigFileUsed())
+	}
 }
