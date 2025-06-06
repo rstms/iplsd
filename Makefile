@@ -27,7 +27,7 @@ go.sum: go.mod
 	go mod tidy
 
 install: build
-	doas install -m 0755 $(program) $(install_dir)/$(program) $(postinstall)
+	go install
 
 test: fmt
 	go test -v -failfast . ./...

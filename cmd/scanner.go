@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/spf13/viper"
 	"log"
@@ -24,6 +25,10 @@ type Scanner struct {
 	Patterns       []*regexp.Regexp
 	stop           chan struct{}
 	process        *os.Process
+	AddCommand     string
+	AddArgs        []string
+	DeleteCommand  string
+	DeleteArgs     []string
 }
 
 var IP_PATTERN = regexp.MustCompile(`((?:\d{1,3}\.){3}\d{1,3})`)
@@ -44,6 +49,18 @@ func NewScanner(AddressFile, TimeoutDir string, patterns []string) (*Scanner, er
 		TickInterval:   interval,
 		AddressTimeout: timeout,
 		stop:           make(chan struct{}),
+	}
+
+	addCommand := strings.Split(viper.GetString("add_command"), " ")
+	s.AddCommand = addCommand[0]
+	if len(addCommand) > 1 {
+		s.AddArgs = addCommand[1:]
+	}
+
+	deleteCommand := strings.Split(viper.GetString("delete_command"), " ")
+	s.DeleteCommand = deleteCommand[0]
+	if len(deleteCommand) > 1 {
+		s.DeleteArgs = deleteCommand[1:]
 	}
 
 	for _, pattern := range patterns {
@@ -323,6 +340,12 @@ func (s *Scanner) readAddressFile() ([]string, error) {
 
 // add address if not present, return true if address already exists
 func (s *Scanner) addAddress(addr string) (string, error) {
+	if s.AddCommand != "" {
+		err := s.exec(s.AddCommand, append(s.AddArgs, addr))
+		if err != nil {
+			return "", err
+		}
+	}
 	addrs, err := s.readAddressFile()
 	if err != nil {
 		return "", err
@@ -340,6 +363,12 @@ func (s *Scanner) addAddress(addr string) (string, error) {
 
 // add address if not present, return true if address already exists
 func (s *Scanner) removeAddress(addr string) (string, error) {
+	if s.DeleteCommand != "" {
+		err := s.exec(s.DeleteCommand, append(s.DeleteArgs, addr))
+		if err != nil {
+			return "", err
+		}
+	}
 	addrs, err := s.readAddressFile()
 	if err != nil {
 		return "", err
@@ -354,4 +383,24 @@ func (s *Scanner) removeAddress(addr string) (string, error) {
 		return "", err
 	}
 	return "deleted from", nil
+}
+
+func (s *Scanner) exec(command string, args []string) error {
+	log.Printf("scanner: %s %s\n", command, strings.Join(args, " "))
+	cmd := exec.Command(command, args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = bufio.NewWriter(&stdout)
+	cmd.Stderr = bufio.NewWriter(&stderr)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	if stdout.Len() > 0 {
+		log.Printf("[out]: %s", stdout.String())
+	}
+	if stderr.Len() > 0 {
+		log.Printf("[err]: %s", stderr.String())
+	}
+	return nil
 }

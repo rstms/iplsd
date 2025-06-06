@@ -66,7 +66,7 @@ Use case: maintain IP address list table file for a pf rule
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		DaemonizeDisabled = viper.GetBool("debug")
+		DaemonizeDisabled = viper.GetBool("foreground")
 		Daemonize(func() {
 			scanner, err := NewScanner(
 				viper.GetString("address_file"),
