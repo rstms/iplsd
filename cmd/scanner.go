@@ -397,10 +397,10 @@ func (s *Scanner) exec(command string, args []string) error {
 		return err
 	}
 	if stdout.Len() > 0 {
-		log.Printf("[out]: %s", stdout.String())
+		log.Printf("[%s]: %s", command, stdout.String())
 	}
 	if stderr.Len() > 0 {
-		log.Printf("[err]: %s", stderr.String())
+		log.Printf("[%s]: %s", command, stderr.String())
 	}
 	return nil
 }
