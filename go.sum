@@ -23,12 +23,10 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
-github.com/rstms/cobra-daemon v0.0.17 h1:QewEC3bdhvTo0Q0r0RoMHoWcxOnOU23eYy3iULJzitY=
-github.com/rstms/cobra-daemon v0.0.17/go.mod h1:jNDrtlTZM+MVnMWyNg/UT+Ndfem0GNYMWOpLgevO0Bk=
-github.com/rstms/go-common v0.2.51 h1:yapu0Shq20a2qY7odxqEzU9Jk/Q1sCzaB88FQ4immqY=
-github.com/rstms/go-common v0.2.51/go.mod h1:X+YExXFyL7HOZwV8fB3VCqfehcBe2IqSaKzsacJQjb0=
-github.com/rstms/go-common v0.2.60 h1:Qq476Cl7LK+2y5YURb8Q8PuDpvxT33ZZgBsN8ycZVI0=
-github.com/rstms/go-common v0.2.60/go.mod h1:X+YExXFyL7HOZwV8fB3VCqfehcBe2IqSaKzsacJQjb0=
+github.com/rstms/cobra-daemon v0.0.19 h1:0nNhaAToQ6BlQnIBkQ/ANyOaN+ZpX88P9mdqhnpT5kA=
+github.com/rstms/cobra-daemon v0.0.19/go.mod h1:XdMFnM3V1FSuNtj5XqviIUe+0tZNwyky3b7cqmhlo+M=
+github.com/rstms/go-common v0.2.61 h1:1OyiaFXEz7sK9ah3ZsSoqp6aSlgL/1Jvyv3CAkxzZXo=
+github.com/rstms/go-common v0.2.61/go.mod h1:C7OFqZdf3aRS4eF9mDv4F+0xGgfP7r43fUI72bBCatg=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sagikazarmark/locafero v0.11.0 h1:1iurJgmM9G3PA/I+wWYIOw/5SyBtxapeHDcg+AAIFXc=
 github.com/sagikazarmark/locafero v0.11.0/go.mod h1:nVIGvgyzw595SUSUE6tvCp3YYTeHs15MvlmU87WwIik=
