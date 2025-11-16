@@ -1,6 +1,8 @@
 module github.com/rstms/iplsd
 
-go 1.25.4
+go 1.23.0
+
+toolchain go1.24.10
 
 require (
 	github.com/rstms/go-daemon v0.1.10
