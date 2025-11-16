@@ -31,11 +31,10 @@ POSSIBILITY OF SUCH DAMAGE.
 package cmd
 
 import (
-	"log"
 	"os"
 
+	"github.com/rstms/cobra-daemon"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var rootCmd = &cobra.Command{
@@ -43,49 +42,20 @@ var rootCmd = &cobra.Command{
 	Use:     "iplsd",
 	Short:   "IP log scan daemon",
 	Long: `
-
 iplsd pf-table log scanning daemon
-
 Scan log files for regex patterns containing IP addresses.
-
 Open LOG_FILE; For each line added:
   Match the line with REGEX
-
 When a pattern match produces a new IP_ADDRESS:
   Append IP_ADDRESS to LIST_FILE if not already present
   Write the timeout time into TIMEOUT_DIR/IP_ADDRESS
-
 Every TIMEOUT_INTERVAL: 
   Read IP_ADDRESS (filename) and timeout (content) from TIMEOUT_DIR/*
   If the timeout has expired:
     Remove IP_ADDRESS from WATCHLIST_FILE
     Delete TIMEOUT_DIR/IP_ADDRESS
-
 Use case: maintain IP address list table file for a pf rule
-
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		DaemonizeDisabled = viper.GetBool("foreground")
-		Daemonize(func() {
-			scanner, err := NewScanner(
-				viper.GetString("address_file"),
-				viper.GetString("timeout_dir"),
-				viper.GetStringSlice("regex"),
-			)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if viper.GetBool("verbose") {
-				log.Println(FormatJSON(scanner))
-			}
-			err = scanner.Scan(viper.GetString("monitored_file"))
-			if err != nil {
-				log.Fatal(err)
-			}
-		}, viper.GetString("logfile"))
-
-	},
 }
 
 func Execute() {
@@ -96,15 +66,13 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(InitConfig)
-	OptionString("config", "c", "", "config file")
-	OptionString("logfile", "l", "", "log filename (default: stderr)")
-	OptionSwitch("foreground", "", "run in foreground")
-	OptionSwitch("verbose", "v", "increase verbosity")
-	OptionString("interval-seconds", "", "600", "timeout check interval in seconds (default: 10 minutes)")
-	OptionString("timeout-seconds", "", "86400", "IP presence timeout in seconds (default: 24 hours)")
-	OptionString("monitored-file", "m", "", "log file to monitor")
-	OptionString("address-file", "w", "/etc/iplsd/watchlist", "IP whitelist/blacklist table file")
-	OptionString("timeout-dir", "d", "/etc/iplsd/ip", "IP timeout file directory")
-	OptionString("regex", "r", `((?:\d{1,3}\.){3}\d{1,3})`, "regex patterns")
+	CobraInit(rootCmd)
+	OptionSwitch(rootCmd, "foreground", "", "run in foreground")
+	OptionString(rootCmd, "interval-seconds", "", "600", "timeout check interval in seconds (default: 10 minutes)")
+	OptionString(rootCmd, "timeout-seconds", "", "86400", "IP presence timeout in seconds (default: 24 hours)")
+	OptionString(rootCmd, "monitored-file", "m", "", "log file to monitor")
+	OptionString(rootCmd, "watchlist-file", "w", "/etc/iplsd/watchlist", "IP whitelist/blacklist table file")
+	OptionString(rootCmd, "timeout-dir", "D", "/etc/iplsd/ip", "IP timeout file directory")
+	OptionString(rootCmd, "regex", "r", `((?:\d{1,3}\.){3}\d{1,3})`, "regex patterns")
+	daemon.AddDaemonCommands(rootCmd, "scanner")
 }

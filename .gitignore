@@ -4,3 +4,4 @@ cruft
 *.core
 *.log
 *postactivate
+.fmt
