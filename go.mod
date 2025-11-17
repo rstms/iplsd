@@ -1,6 +1,6 @@
 module github.com/rstms/iplsd
 
-go 1.24.10
+go 1.25.4
 
 require (
 	github.com/rstms/cobra-daemon v0.0.19
