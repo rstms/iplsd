@@ -3,8 +3,8 @@ module github.com/rstms/iplsd
 go 1.25.4
 
 require (
-	github.com/rstms/cobra-daemon v0.0.19
-	github.com/rstms/go-common v0.2.61
+	github.com/rstms/cobra-daemon v0.1.0
+	github.com/rstms/go-common v0.2.62
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
