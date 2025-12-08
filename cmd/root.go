@@ -38,7 +38,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Version: "0.2.7",
+	Version: "0.2.8",
 	Use:     "iplsd",
 	Short:   "IP log scan daemon",
 	Long: `
